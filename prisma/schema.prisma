@@ -1,0 +1,65 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Post {
+  id              String    @id @default(uuid())
+  title           String
+  slug            String    @unique
+  excerpt         String?
+  content         String
+  coverImage      String?
+  ogImage         String?
+  status          Status    @default(DRAFT)
+  publishedAt     DateTime? @map("published_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  author          Author    @relation(fields: [authorId], references: [id])
+  authorId        String    @map("author_id")
+  categories      Category[]
+  tags            Tag[]
+
+  seoTitle        String?   @map("seo_title")
+  seoDescription  String?   @map("seo_description")
+  keywords        String[]
+  newsKeywords    String[]  @map("news_keywords")
+
+  @@map("posts")
+}
+
+model Author {
+  id      String  @id @default(uuid())
+  name    String
+  picture String?
+  posts   Post[]
+
+  @@map("authors")
+}
+
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String @unique
+  posts Post[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String @unique
+  posts Post[]
+
+  @@map("tags")
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
