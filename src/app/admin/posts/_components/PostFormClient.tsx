@@ -1,24 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { createPost } from '../actions';
 import markdownToHtml from '@/lib/markdownToHtml';
 import {
-  BoldIcon,
-  ItalicIcon,
-  StrikethroughIcon,
-  ListBulletIcon,
-  LinkIcon,
-  PhotoIcon,
-  MinusIcon,
-  CodeBracketIcon,
-  H1Icon,
-  H2Icon,
-  H3Icon,
-  NumberedListIcon,
-  ChatBubbleLeftIcon,
-  CodeBracketSquareIcon
-} from '@heroicons/react/24/outline';
+  Bold, Italic, Strikethrough, List, Link, Image, Minus, Code2, Heading1, Heading2, Heading3, ListOrdered, Quote, Code, Eye, EyeOff
+} from 'lucide-react';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface PostFormProps {
   initialData?: {
@@ -77,10 +69,8 @@ export default function PostFormClient({ initialData, action }: PostFormProps) {
     }
 
     setContent(newContent);
-    // Manually update preview
     markdownToHtml(newContent).then(html => setPreviewContent(html));
 
-    // Restore cursor position
     setTimeout(() => {
       if (textarea) {
         textarea.selectionStart = newCursorPos;
@@ -93,94 +83,116 @@ export default function PostFormClient({ initialData, action }: PostFormProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    formData.set('content', content); // Ensure the content from state is used
+    formData.set('content', content);
     action(formData);
   };
 
+  const toolbarButtons = [
+    { icon: Bold, onClick: () => insertMarkdown('**', '**', 'bold text') },
+    { icon: Italic, onClick: () => insertMarkdown('*', '*', 'italic text') },
+    { icon: Strikethrough, onClick: () => insertMarkdown('~~', '~~', 'strikethrough') },
+    { icon: Code, onClick: () => insertMarkdown('`', '`', 'code') },
+    { icon: Code2, onClick: () => insertMarkdown('```\n', '\n```', 'code block') },
+    { icon: Quote, onClick: () => insertMarkdown('> ', '', 'quote') },
+    { icon: Heading1, onClick: () => insertMarkdown('# ', '', 'Heading 1') },
+    { icon: Heading2, onClick: () => insertMarkdown('## ', '', 'Heading 2') },
+    { icon: Heading3, onClick: () => insertMarkdown('### ', '', 'Heading 3') },
+    { icon: List, onClick: () => insertMarkdown('- ', '', 'list item') },
+    { icon: ListOrdered, onClick: () => insertMarkdown('1. ', '', 'list item') },
+    { icon: Link, onClick: () => insertMarkdown('[', '](url)', 'link text') },
+    { icon: Image, onClick: () => insertMarkdown('![', '](url)', 'alt text') },
+    { icon: Minus, onClick: () => insertMarkdown('---', '', '') },
+  ];
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col md:flex-row h-full p-4">
-      <div className={`flex-1 flex flex-col bg-white rounded-md shadow-md overflow-y-auto p-6 mb-4 md:mb-0 ${showPreview ? 'md:mr-4' : ''}`}>
-        <div className="mb-6">
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-          <input type="text" id="title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2" />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
-          <textarea id="excerpt" name="excerpt" rows={3} value={excerpt} onChange={(e) => setExcerpt(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2"></textarea>
-        </div>
-        <div className="mb-6">
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">Content (Markdown)</label>
-          <div className="border border-gray-300 rounded-md shadow-sm overflow-hidden">
-            <div className="flex flex-wrap bg-gray-100 border-b border-gray-300 p-2 space-x-1">
-              <button type="button" onClick={() => insertMarkdown('**', '**', 'bold text')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><BoldIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('*', '*', 'italic text')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><ItalicIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('~~', '~~', 'strikethrough')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><StrikethroughIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('`', '`', 'code')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><CodeBracketSquareIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('```\n', '\n```', 'code block')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><CodeBracketIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('> ', '', 'quote')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><ChatBubbleLeftIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('# ', '', 'Heading 1')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><H1Icon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('## ', '', 'Heading 2')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><H2Icon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('### ', '', 'Heading 3')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><H3Icon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('- ', '', 'list item')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><ListBulletIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('1. ', '', 'list item')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><NumberedListIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('[', '](url)', 'link text')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><LinkIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('![', '](url)', 'alt text')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><PhotoIcon className="h-4 w-4" /></button>
-              <button type="button" onClick={() => insertMarkdown('---', '', '')} className="p-1 text-gray-700 hover:bg-gray-200 rounded"><MinusIcon className="h-4 w-4" /></button>
+    <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 h-full">
+      <div className="lg:col-span-4 flex flex-col gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Post Details</CardTitle>
+            <CardDescription>Fill in the main details of your post.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid gap-3">
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </div>
-            <textarea
+            <div className="grid gap-3">
+              <Label htmlFor="excerpt">Excerpt</Label>
+              <Textarea id="excerpt" name="excerpt" value={excerpt} onChange={(e) => setExcerpt(e.target.value)} />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="authorName">Author Name</Label>
+              <Input id="authorName" name="authorName" value={authorName} onChange={(e) => setAuthorName(e.target.value)} required />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="flex-1 flex flex-col">
+          <CardHeader>
+            <CardTitle>Content</CardTitle>
+            <CardDescription>Write your post content using Markdown.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col">
+            <div className="flex flex-wrap items-center gap-1 rounded-t-md border bg-muted p-2">
+              {toolbarButtons.map((ButtonComponent, index) => (
+                <Button key={index} type="button" variant="outline" size="icon" onClick={ButtonComponent.onClick}>
+                  <ButtonComponent.icon className="h-4 w-4" />
+                </Button>
+              ))}
+            </div>
+            <Textarea
               id="content"
               name="content"
-              rows={10}
               value={content}
               onChange={handleContentChange}
               required
-              className="block w-full focus:outline-none focus:ring-0 sm:text-sm p-2"
+              className="flex-1 rounded-t-none focus-visible:ring-0"
               ref={contentRef}
-            ></textarea>
-          </div>
-        </div>
-        <div className="mb-6">
-          <label htmlFor="coverImage" className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-          <input type="text" id="coverImage" name="coverImage" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2" />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="ogImage" className="block text-sm font-medium text-gray-700 mb-1">Open Graph Image URL</label>
-          <input type="text" id="ogImage" name="ogImage" value={ogImage} onChange={(e) => setOgImage(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2" />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="authorName" className="block text-sm font-medium text-gray-700 mb-1">Author Name</label>
-          <input type="text" id="authorName" name="authorName" value={authorName} onChange={(e) => setAuthorName(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2" />
-        </div>
+              rows={15}
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Media</CardTitle>
+            <CardDescription>Add images to your post.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid gap-3">
+              <Label htmlFor="coverImage">Cover Image URL</Label>
+              <Input id="coverImage" name="coverImage" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="ogImage">Open Graph Image URL</Label>
+              <Input id="ogImage" name="ogImage" value={ogImage} onChange={(e) => setOgImage(e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
       {showPreview && (
-        <div className="flex-1 flex flex-col p-6 border border-gray-300 rounded-md bg-white overflow-y-auto">
-          <h2 className="text-xl font-bold mb-4">Preview</h2>
-          {coverImage && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Cover Image</h3>
-              <img src={coverImage} alt="Cover Preview" className="w-full h-auto object-cover rounded-md" />
-            </div>
-          )}
-          {ogImage && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Open Graph Image</h3>
-              <img src={ogImage} alt="OG Preview" className="w-full h-auto object-cover rounded-md" />
-            </div>
-          )}
-          <h3 className="text-lg font-semibold mb-2">{title}</h3>
-          <p className="text-sm text-gray-600 mb-4">{excerpt}</p>
-          <div className="prose" dangerouslySetInnerHTML={{ __html: previewContent }} />
+        <div className="lg:col-span-3 flex flex-col">
+          <Card className="flex-1 overflow-y-auto">
+            <CardHeader>
+              <CardTitle>Preview</CardTitle>
+              <CardDescription>This is how your post will look.</CardDescription>
+            </CardHeader>
+            <CardContent className="prose dark:prose-invert">
+              {coverImage && <img src={coverImage} alt="Cover Preview" className="w-full h-auto object-cover rounded-md mb-4" />}
+              <h1>{title}</h1>
+              <p className="text-muted-foreground">{excerpt}</p>
+              <div dangerouslySetInnerHTML={{ __html: previewContent }} />
+            </CardContent>
+          </Card>
         </div>
       )}
-      <div className="fixed bottom-4 right-4 flex space-x-2">
-        <button
-          type="button"
-          onClick={() => setShowPreview(!showPreview)}
-          className="bg-gray-200 text-black px-6 py-3 rounded-md shadow-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-        >
+
+      <div className="fixed bottom-4 right-4 flex space-x-2 z-10">
+        <Button type="button" variant="secondary" onClick={() => setShowPreview(!showPreview)}>
+          {showPreview ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
           {showPreview ? 'Hide Preview' : 'Show Preview'}
-        </button>
-        <button type="submit" className="bg-black text-white px-6 py-3 rounded-md shadow-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">Save</button>
+        </Button>
+        <Button type="submit">Save Post</Button>
       </div>
     </form>
   );

@@ -1,5 +1,16 @@
 import { getAuthorById } from "@/lib/api";
 import { updateAuthor } from '../../actions';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default async function EditAuthorPage({ params }: { params: { id: string } }) {
   const author = await getAuthorById(params.id);
@@ -15,21 +26,49 @@ export default async function EditAuthorPage({ params }: { params: { id: string 
   const updateAuthorWithId = updateAuthor.bind(null, params.id);
 
   return (
-    <div className="flex flex-col h-full p-10">
-      <h1 className="text-2xl font-bold mb-8">Edit Author: {author.name}</h1>
-      <form action={updateAuthorWithId} className="flex-1 bg-white p-6 rounded-md shadow-md overflow-y-auto">
-        <div className="mb-6">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-          <input type="text" id="name" name="name" defaultValue={author.name} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2" />
+    <form action={updateAuthorWithId}>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold">Edit Author</h1>
+          <p className="text-gray-500">Update the details of the author.</p>
         </div>
-        <div className="mb-6">
-          <label htmlFor="picture" className="block text-sm font-medium text-gray-700 mb-1">Picture URL</label>
-          <input type="text" id="picture" name="picture" defaultValue={author.picture || ''} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2" />
-        </div>
-        <div className="fixed bottom-4 right-4">
-          <button type="submit" className="bg-black text-white px-6 py-3 rounded-md shadow-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">Save</button>
-        </div>
-      </form>
-    </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{author.name}</CardTitle>
+          <CardDescription>
+            Update the details below for the author.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6">
+            <div className="grid gap-3">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                className="w-full"
+                defaultValue={author.name}
+                required
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="picture">Picture URL</Label>
+              <Input
+                id="picture"
+                name="picture"
+                type="text"
+                className="w-full"
+                defaultValue={author.picture || ''}
+              />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="justify-end">
+          <Button type="submit">Save</Button>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

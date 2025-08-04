@@ -16,21 +16,16 @@ export default async function EditPostPage({ params }: { params: { slug: string 
   const updatePostWithSlug = updatePost.bind(null, params.slug);
 
   return (
-    <div className="flex flex-col h-full">
-      <h1 className="text-2xl font-bold p-10">Edit Post: {post.title}</h1>
-      <div className="flex-1 overflow-hidden">
-        <PostFormClient
-          initialData={{
-            title: post.title,
-            excerpt: post.excerpt || '',
-            content: post.content,
-            coverImage: post.coverImage || '',
-            ogImage: post.ogImage || '',
-            authorName: post.author.name,
-          }}
-          action={updatePostWithSlug}
-        />
-      </div>
-    </div>
+    <PostFormClient
+      initialData={{
+        title: post.title,
+        excerpt: post.excerpt || '',
+        content: post.content,
+        coverImage: post.coverImage || '',
+        ogImage: post.ogImage || '',
+        authorName: post.author.name,
+      }}
+      action={updatePostWithSlug}
+    />
   );
 }
